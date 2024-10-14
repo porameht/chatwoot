@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: rails
+    env: ruby
+    buildCommand: docker build -t chatwoot-rails -f docker/dockerfiles/rails.Dockerfile .
+    startCommand: docker run -p 3000:3000 chatwoot-rails
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RAILS_ENV
+        value: production
+      - key: INSTALLATION_ENV
+        value: docker
+    disk:
+      name: chatwoot-storage
+      mountPath: /app/storage
+    healthCheckPath: /
+    numInstances: 1
+  - type: worker
+    name: sidekiq
+    env: ruby
+    buildCommand: docker build -t chatwoot-sidekiq -f docker/dockerfiles/rails.Dockerfile .
+    startCommand: docker run chatwoot-sidekiq bundle exec sidekiq -C config/sidekiq.yml
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RAILS_ENV
+        value: production
+      - key: INSTALLATION_ENV
+        value: docker
+    disk:
+      name: chatwoot-storage
+      mountPath: /app/storage
